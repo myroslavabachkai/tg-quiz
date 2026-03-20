@@ -959,20 +959,33 @@ function showResult() {
 /* ════════════════════════════════════════════════════
    TELEGRAM DATA SEND
 ════════════════════════════════════════════════════ */
-function sendTelegramData() {
-  const payload = JSON.stringify({
-    niche:                state.niche,
-    pain:                 state.pain,
-    leads_per_month:      state.leads_per_month,
-    managers:             state.managers,
+async function sendTelegramData() {
+  const payload = {
+    niche:                 state.niche,
+    pain:                  state.pain,
+    leads_per_month:       state.leads_per_month,
+    managers:              state.managers,
     estimated_hours_saved: state.estimated_hours_saved,
-    timestamp:            new Date().toISOString()
-  });
+    timestamp:             new Date().toISOString()
+  };
 
+  // ← Вставте сюди ваш URL з Make
+  const MAKE_URL = 'https://hook.eu1.make.com/ВАШ_URL_ТУТ';
+
+  try {
+    await fetch(MAKE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) {
+    console.error('Webhook error:', e);
+  }
+
+  // Telegram sendData як резервний канал
   if (tg?.sendData) {
-    tg.sendData(payload);
+    tg.sendData(JSON.stringify(payload));
   } else {
-    // Fallback for testing outside Telegram
     console.log('[TG Data]', payload);
   }
 }
