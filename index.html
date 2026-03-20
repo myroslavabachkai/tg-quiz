@@ -970,7 +970,7 @@ async function sendTelegramData() {
   };
 
   // ← Вставте сюди ваш URL з Make
-  const MAKE_URL = 'https://hook.eu2.make.com/dvcflmo3644e5wpy8tdttuht9txe73ow';
+  const MAKE_URL = 'https://hook.eu1.make.com/ВАШ_URL_ТУТ';
 
   try {
     await fetch(MAKE_URL, {
@@ -982,12 +982,8 @@ async function sendTelegramData() {
     console.error('Webhook error:', e);
   }
 
-  // Telegram sendData як резервний канал
-  if (tg?.sendData) {
-    tg.sendData(JSON.stringify(payload));
-  } else {
-    console.log('[TG Data]', payload);
-  }
+  // Дані відправлені у Make webhook вище
+  console.log('[Quiz Data]', payload);
 }
 
 /* ════════════════════════════════════════════════════
@@ -996,11 +992,13 @@ async function sendTelegramData() {
 function getPDF() {
   if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
   const payload = JSON.stringify({ action: 'get_pdf', ...state });
-  if (tg?.sendData) {
-    tg.sendData(payload);
-  } else {
-    alert('Запит на PDF надіслано!');
-  }
+  // Відправка в Make webhook
+  fetch(MAKE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: payload
+  }).catch(e => console.error(e));
+  alert('✅ Запит на PDF надіслано!');
 }
 
 function bookConsult() {
