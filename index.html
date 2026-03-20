@@ -525,7 +525,7 @@
 
     <div class="hero-tag">Квіз архітектора чат-ботів</div>
     <h1>Дізнайтесь, де ваш бізнес втрачає час та гроші</h1>
-    <p class="hero-sub">Пройдіть аудит та отримайте персоналізовану стратегію автоматизації</p>
+    <p class="hero-sub">Пройдіть аудит та дізнайтесь скільки бот може зекономити цінних годин та отримаєте персоналізовані поради автоматизації</p>
 
     <button class="btn btn-primary" onclick="startQuiz()">
       🚀 Почати аудит
@@ -574,33 +574,33 @@
   <!-- ═══ SCREEN 2: PAIN ═══ -->
   <div id="screen-2" class="screen q-screen">
     <div class="q-icon">⏳</div>
-    <h2>Де ви втрачаєте найбільше часу?</h2>
+    <h2>Давайте визначимо де ви втрачаєте найбільше часу?</h2>
     <div class="options">
       <button class="option-btn" onclick="selectPain('pricing', this)">
         <div class="option-icon">💬</div>
         <div>
-          <div>Відповіді на "Скільки коштує?"</div>
+          <div>Відповіді на часті питання типу "Скільки коштує?"</div>
           <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Однакові запитання щодня</div>
         </div>
       </button>
       <button class="option-btn" onclick="selectPain('qualification', this)">
         <div class="option-icon">🎯</div>
         <div>
-          <div>Кваліфікація лідів</div>
+          <div>Кваліфікація лідів (потенційний чи не потенційний, запис даних до CRM)</div>
           <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Нецільові звернення</div>
         </div>
       </button>
       <button class="option-btn" onclick="selectPain('retention', this)">
         <div class="option-icon">🔔</div>
         <div>
-          <div>Відсутність нагадувань</div>
+          <div>Відсутність нагадувань (нагадуєте про вас або запис із запізненням)</div>
           <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Клієнти не повертаються</div>
         </div>
       </button>
       <button class="option-btn" onclick="selectPain('data', this)">
         <div class="option-icon">📊</div>
         <div>
-          <div>Ручний збір даних</div>
+          <div>Ручний збір даних (піб, номер телефону, ємейл)</div>
           <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Таблиці, звіти вручну</div>
         </div>
       </button>
@@ -612,10 +612,10 @@
   <!-- ═══ SCREEN 3: METRICS ═══ -->
   <div id="screen-3" class="screen q-screen">
     <div class="q-icon">📐</div>
-    <h2>Розрахуємо ваш потенціал</h2>
+    <h2>Розрахуємо потенціал бота для вашого випадку</h2>
 
     <div class="input-group">
-      <label class="input-label">Заявок на місяць</label>
+      <label class="input-label">Вкажіть орієнтовно кількість заявок на місяць</label>
       <div class="number-input-wrap">
         <button class="num-btn" onclick="adjustNum('leads', -10)">−</button>
         <input class="num-input" id="leads-input" type="number" inputmode="numeric"
@@ -625,7 +625,7 @@
     </div>
 
     <div class="input-group">
-      <label class="input-label">Менеджерів у команді</label>
+      <label class="input-label">Скільки менеджерів у команді</label>
       <div class="number-input-wrap">
         <button class="num-btn" onclick="adjustNum('managers', -1)">−</button>
         <input class="num-input" id="managers-input" type="number" inputmode="numeric"
@@ -635,7 +635,7 @@
     </div>
 
     <div class="input-group">
-      <label class="input-label">Час на опрацювання 1 заявки: <span id="time-label" style="color:var(--acc2);font-weight:600">15 хв</span></label>
+      <label class="input-label">Оберіть скільки часу йде на опрацювання 1 заявки: <span id="time-label" style="color:var(--acc2);font-weight:600">15 хв</span></label>
       <input type="range" id="time-slider" min="5" max="60" step="5" value="15"
              oninput="updateTimeLabel();updateCalc()"
              style="width:100%;margin-top:8px">
@@ -649,7 +649,7 @@
     <div class="preview-card">
       <div class="preview-label">Автоматизація звільнить вам</div>
       <div class="preview-value" id="hours-preview">0</div>
-      <div class="preview-unit">годин на місяць</div>
+      <div class="preview-unit">годин на місяць, які ви зможете використати на стратегію, креатив або чашку кави</div>
     </div>
 
     <div class="spacer"></div>
@@ -678,7 +678,7 @@
 
     <div class="result-highlight">
       <div class="result-highlight-num" id="result-hours">0</div>
-      <div class="result-highlight-label">годин/місяць ви звільните від рутини</div>
+      <div class="result-highlight-label">годин/місяць ви заощадите разом з ботом</div>
     </div>
 
     <div class="result-card">
@@ -686,15 +686,6 @@
       <div class="result-metric">
         <span class="result-metric-label">Рішення</span>
         <span class="result-metric-value accent" id="result-solution">—</span>
-      </div>
-      <div class="result-metric">
-        <span class="result-metric-label">Скорочення циклу угоди</span>
-        <span class="result-metric-value green">−30%</span>
-      </div>
-      <div class="result-metric">
-        <span class="result-metric-label">Окупність</span>
-        <span class="result-metric-value green">1–2 тижні</span>
-      </div>
     </div>
 
     <p class="result-strategy" id="result-strategy"></p>
@@ -918,36 +909,36 @@ const NICHE_LABELS = {
 
 const SOLUTIONS = {
   pricing: {
-    services:  'FAQ-бот + автокваліфікація',
-    ecommerce: 'Каталог-бот + автоматичний прайс',
-    agency:    'Lead-фільтр + брифінг-воронка',
+    services:  'FAQ-бот + запис на послугу + прайс та католг послуг + розсилки',
+    ecommerce: 'Каталог-бот + автоматичний прайс + розсилки',
+    agency:    'Кваліфікація ліда, його очікування та дані для зв'язку + Розсилки ',
     infobiz:   'Консультаційний бот + CRM'
   },
   qualification: {
     services:  'Кваліфікаційна анкета + CRM-тригери',
     ecommerce: 'Таргет-фільтр + сегментація',
     agency:    'LeadGen-фільтр + скоринг',
-    infobiz:   'Вебінарна воронка + фільтр'
+    infobiz:   'Вебінарна воронка, онлайн навчальний курс + сегментація + онлайн оплата'
   },
   retention: {
     services:  'Retention-система + нагадування',
-    ecommerce: 'Loyalty-бот + авторасилка',
-    agency:    'Follow-up автоматизація',
-    infobiz:   'Drip-кампанія + реактивація'
+    ecommerce: 'Бот з системою лояльності + авторозсилка',
+    agency:    'Follow-up автоматизація (продовження комунікації з клієнтом, партнером або колегою після попереднього контакту для закріплення домовленостей)',
+    infobiz:   'Drip-кампанія + реактивація (автоматична серія повідомлень, спрямована на повернення «сплячих» клієнтів)'
   },
   data: {
     services:  'CRM + автозвіти',
-    ecommerce: 'Warehouse-бот + дашборд',
-    agency:    'Аналітика проєктів + авто-репорт',
-    infobiz:   'Студентський портал + аналітика'
+    ecommerce: 'Бонусні програми та картки покупців',
+    agency:    'Інформування про статус проектів + розсилка з новинами digital',
+    infobiz:   'Студентський портал, особистий кабінет з навчальними уроками + аналітика'
   }
 };
 
 const STRATEGIES = {
-  pricing:       n => `Ваш головний біль — однотипні запитання про ціну. Для <strong>${NICHE_LABELS[n]}</strong> ми будуємо розумний FAQ-бот, який відповідає за 2 секунди і одразу переводить клієнта на наступний крок без участі менеджера.`,
-  qualification: n => `Нецільові ліди — це злодії часу. Для <strong>${NICHE_LABELS[n]}</strong> ми впроваджуємо автоматичний LeadGen-фільтр: клієнт проходить короткий скрінінг, і до менеджера доходять лише "гарячі" заявки.`,
+  pricing:       n => `Ваш головний біль — однотипні запитання. Для <strong>${NICHE_LABELS[n]}</strong> ми будуємо розумний FAQ-бот, який відповідає за 2 секунди і одразу переводить клієнта на наступний крок без участі менеджера.`,
+  qualification: n => `Нецільові ліди — це ті хто забирає най цінніше це ваш час. Для <strong>${NICHE_LABELS[n]}</strong> ми впроваджуємо автоматичний фільтрацію лідів: клієнт проходить короте опитування, і до менеджера доходять лише "гарячі" заявки.`,
   retention:     n => `Клієнт, який не повернувся — втрачені гроші. Для <strong>${NICHE_LABELS[n]}</strong> ми будуємо Retention-систему з автонагадуваннями, яка підтримує зв'язок без вашої участі.`,
-  data:          n => `Ручний збір даних — це зупинений ріст. Для <strong>${NICHE_LABELS[n]}</strong> ми налаштовуємо автоматичний збір і синхронізацію даних у CRM з щоденними звітами на пошту.`
+  data:          n => `Ручний збір даних — це зупинений ріст. Для <strong>${NICHE_LABELS[n]}</strong> ми налаштовуємо автоматичний збір і синхронізацію даних у CRM .`
 };
 
 function showResult() {
@@ -988,7 +979,7 @@ async function sendTelegramData() {
   };
 
   // ← Вставте сюди ваш URL з Make
-  const MAKE_URL = 'https://t.me/BookMeFastBot?start=booking_5992801240';
+  const MAKE_URL = 'https://hook.eu2.make.com/dvcflmo3644e5wpy8tdttuht9txe73ow';
 
   try {
     await fetch(MAKE_URL, {
