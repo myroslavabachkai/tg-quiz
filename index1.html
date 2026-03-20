@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Аудит Автоматизації</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  /* ── TOKENS ─────────────────────────────────────────────── */
+  :root {
+    --acc:    #6C47FF;
+    --acc2:   #A78BFA;
+    --bg:     #0D0D14;
+    --bg2:    #13131F;
+    --bg3:    #1C1C2E;
+    --card:   #1A1A2E;
+    --border: rgba(108,71,255,.25);
+    --text:   #F0EEFF;
+    --muted:  #8B8AA8;
+    --green:  #34D399;
+    --r:      16px;
+    --ease:   cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── RESET ──────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'SF Pro Display', -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── APP SHELL ──────────────────────────────────────────── */
+  #app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── PROGRESS BAR ───────────────────────────────────────── */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--bg3);
+    z-index: 100;
+    transition: opacity .3s;
+  }
+  #progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--acc), var(--acc2));
+    border-radius: 0 2px 2px 0;
+    transition: width .5s var(--ease);
+  }
+  #progress-label {
+    position: fixed;
+    top: 12px; right: 16px;
+    font-size: 12px;
+    color: var(--muted);
+    z-index: 100;
+    transition: opacity .3s;
+  }
+
+  /* ── SCREENS ────────────────────────────────────────────── */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px 32px;
+    overflow-y: auto;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity .35s var(--ease), transform .35s var(--ease);
+  }
+  .screen.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0);
+  }
+  .screen.exit {
+    opacity: 0;
+    transform: translateX(-40px);
+    pointer-events: none;
+  }
+
+  /* ── HERO ───────────────────────────────────────────────── */
+  #screen-0 {
+    justify-content: flex-end;
+    padding-bottom: 40px;
+    background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(108,71,255,.18) 0%, transparent 70%);
+  }
+
+  .hero-visual {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 55%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  /* Flow animation */
+  .flow-canvas {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  .node {
+    position: absolute;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    animation: float 3s ease-in-out infinite;
+  }
+  .node-primary {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, var(--acc), #8B5CF6);
+    box-shadow: 0 0 40px rgba(108,71,255,.5);
+    top: 30%; left: 50%;
+    transform: translate(-50%, -50%);
+    animation-delay: 0s;
+  }
+  .node-a {
+    width: 48px; height: 48px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    top: 20%; left: 18%;
+    animation-delay: .5s;
+  }
+  .node-b {
+    width: 48px; height: 48px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    top: 20%; right: 18%;
+    animation-delay: 1s;
+  }
+  .node-c {
+    width: 44px; height: 44px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    top: 55%; left: 22%;
+    animation-delay: 1.5s;
+  }
+  .node-d {
+    width: 44px; height: 44px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    top: 55%; right: 22%;
+    animation-delay: .8s;
+  }
+  .connector {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) translate(-50%, -50%); }
+    50%       { transform: translateY(-8px) translate(-50%, -50%); }
+  }
+  .node-a, .node-b, .node-c, .node-d {
+    transform: none;
+  }
+  @keyframes floatSimple {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-8px); }
+  }
+  .node-a { animation: floatSimple 3s ease-in-out infinite .5s; }
+  .node-b { animation: floatSimple 3s ease-in-out infinite 1s; }
+  .node-c { animation: floatSimple 3s ease-in-out infinite 1.5s; }
+  .node-d { animation: floatSimple 3s ease-in-out infinite .8s; }
+
+  .pulse-ring {
+    position: absolute;
+    inset: -12px;
+    border-radius: 20px;
+    border: 1px solid rgba(108,71,255,.4);
+    animation: pulse-ring 2s ease-out infinite;
+  }
+  @keyframes pulse-ring {
+    0%   { transform: scale(1); opacity: .8; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  .expert-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 16px 8px 8px;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+  .expert-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--acc), #8B5CF6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .expert-info { line-height: 1.3; }
+  .expert-name { font-size: 13px; font-weight: 600; }
+  .expert-role { font-size: 11px; color: var(--muted); }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(108,71,255,.15);
+    border: 1px solid rgba(108,71,255,.3);
+    border-radius: 50px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--acc2);
+    margin-bottom: 14px;
+  }
+  .hero-tag::before { content: '⚡'; }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 10px;
+    letter-spacing: -.4px;
+  }
+  .hero-sub {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  /* ── QUESTION SCREENS ───────────────────────────────────── */
+  .q-screen { padding-top: 60px; justify-content: flex-start; }
+  .q-icon { font-size: 32px; margin-bottom: 14px; }
+  h2 { font-size: 22px; font-weight: 700; line-height: 1.3; margin-bottom: 24px; }
+
+  /* ── OPTION BUTTONS ─────────────────────────────────────── */
+  .options { display: flex; flex-direction: column; gap: 12px; }
+  .option-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--card);
+    border: 1.5px solid transparent;
+    border-radius: var(--r);
+    padding: 16px 18px;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all .2s var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .option-btn:active { transform: scale(.97); }
+  .option-btn.selected {
+    border-color: var(--acc);
+    background: rgba(108,71,255,.12);
+  }
+  .option-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--bg3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    transition: background .2s;
+  }
+  .option-btn.selected .option-icon { background: rgba(108,71,255,.2); }
+
+  /* ── INPUT SCREEN ───────────────────────────────────────── */
+  .input-group { margin-bottom: 20px; }
+  .input-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; display: block; }
+  .number-input-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .number-input-wrap:focus-within { border-color: var(--acc); }
+  .num-btn {
+    width: 52px; height: 56px;
+    background: var(--bg3);
+    border: none;
+    color: var(--text);
+    font-size: 22px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .num-btn:active { background: rgba(108,71,255,.2); }
+  .num-input {
+    flex: 1;
+    height: 56px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 600;
+    text-align: center;
+    outline: none;
+    width: 0;
+  }
+  .num-input::placeholder { color: var(--muted); font-weight: 400; }
+
+  .preview-card {
+    background: linear-gradient(135deg, rgba(108,71,255,.15), rgba(52,211,153,.08));
+    border: 1px solid rgba(108,71,255,.2);
+    border-radius: var(--r);
+    padding: 18px;
+    margin-top: 20px;
+    text-align: center;
+  }
+  .preview-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .preview-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--green);
+    transition: all .3s var(--ease);
+  }
+  .preview-unit { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+  /* ── LOADER ─────────────────────────────────────────────── */
+  #screen-loader {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: var(--bg);
+  }
+  .loader-ring {
+    width: 72px; height: 72px;
+    border: 3px solid var(--bg3);
+    border-top-color: var(--acc);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+    margin: 0 auto 24px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-steps { margin-top: 20px; }
+  .loader-step {
+    font-size: 14px;
+    color: var(--muted);
+    padding: 6px 0;
+    opacity: 0;
+    transition: opacity .4s;
+  }
+  .loader-step.done { opacity: 1; color: var(--green); }
+  .loader-step.done::before { content: '✓ '; }
+  .loader-step.active { opacity: 1; }
+
+  /* ── RESULT ─────────────────────────────────────────────── */
+  #screen-result { padding-top: 56px; }
+  .result-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(52,211,153,.12);
+    border: 1px solid rgba(52,211,153,.3);
+    border-radius: 50px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: var(--green);
+    margin-bottom: 16px;
+  }
+  .result-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .result-card-title {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .result-metric {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .result-metric:last-child { border-bottom: none; }
+  .result-metric-label { font-size: 14px; color: var(--muted); }
+  .result-metric-value { font-size: 15px; font-weight: 600; }
+  .result-metric-value.accent { color: var(--acc2); }
+  .result-metric-value.green { color: var(--green); }
+
+  .result-highlight {
+    background: linear-gradient(135deg, rgba(108,71,255,.2), rgba(167,139,250,.1));
+    border: 1px solid rgba(108,71,255,.35);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .result-highlight-num {
+    font-size: 48px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--acc2), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .result-highlight-label { font-size: 14px; color: var(--muted); }
+  .result-strategy { font-size: 15px; line-height: 1.6; color: var(--text); margin-bottom: 20px; }
+  .result-strategy strong { color: var(--acc2); }
+
+  /* ── BUTTONS ────────────────────────────────────────────── */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 16px;
+    border-radius: var(--r);
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s var(--ease);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--acc), #8B5CF6);
+    color: #fff;
+    box-shadow: 0 8px 32px rgba(108,71,255,.35);
+    margin-bottom: 12px;
+  }
+  .btn-secondary {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 400;
+    padding: 10px;
+  }
+
+  /* ── SPACER ─────────────────────────────────────────────── */
+  .spacer { flex: 1; }
+
+  /* hide scrollbar */
+  .screen::-webkit-scrollbar { display: none; }
+  .screen { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ── SAFE AREA ──────────────────────────────────────────── */
+  .safe-bottom { height: env(safe-area-inset-bottom, 0); }
+</style>
+</head>
+<body>
+
+<!-- Progress -->
+<div id="progress-bar" style="opacity:0">
+  <div id="progress-fill" style="width:0%"></div>
+</div>
+<div id="progress-label" style="opacity:0"></div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- ═══ SCREEN 0: HERO ═══ -->
+  <div id="screen-0" class="screen active">
+    <div class="hero-visual">
+      <div class="flow-canvas">
+        <!-- Animated nodes -->
+        <div class="node node-a">🤖</div>
+        <div class="node node-b">📊</div>
+        <div class="node node-primary">
+          ⚡
+          <div class="pulse-ring"></div>
+        </div>
+        <div class="node node-c">💬</div>
+        <div class="node node-d">📈</div>
+        <!-- SVG connectors -->
+        <svg class="connector" viewBox="0 0 375 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="92" y1="76" x2="168" y2="128" stroke="rgba(108,71,255,.3)" stroke-width="1.5" stroke-dasharray="4 4">
+            <animate attributeName="stroke-dashoffset" values="8;0" dur="1.5s" repeatCount="indefinite"/>
+          </line>
+          <line x1="283" y1="76" x2="207" y2="128" stroke="rgba(108,71,255,.3)" stroke-width="1.5" stroke-dasharray="4 4">
+            <animate attributeName="stroke-dashoffset" values="8;0" dur="1.5s" repeatCount="indefinite"/>
+          </line>
+          <line x1="168" y1="158" x2="108" y2="208" stroke="rgba(108,71,255,.3)" stroke-width="1.5" stroke-dasharray="4 4">
+            <animate attributeName="stroke-dashoffset" values="8;0" dur="1.5s" repeatCount="indefinite"/>
+          </line>
+          <line x1="207" y1="158" x2="267" y2="208" stroke="rgba(108,71,255,.3)" stroke-width="1.5" stroke-dasharray="4 4">
+            <animate attributeName="stroke-dashoffset" values="8;0" dur="1.5s" repeatCount="indefinite"/>
+          </line>
+        </svg>
+      </div>
+    </div>
+
+    <div class="expert-badge">
+      <div class="expert-avatar">👨‍💻</div>
+      <div class="expert-info">
+        <div class="expert-name">Мирослава Бачкай</div>
+        <div class="expert-role">Архітектор чат-ботів</div>
+      </div>
+    </div>
+
+    <div class="hero-tag">Квіз архітектора чат-ботів</div>
+    <h1>Дізнайтесь, де ваш бізнес втрачає час та гроші</h1>
+    <p class="hero-sub">Пройдіть аудит та отримайте персоналізовану стратегію автоматизації</p>
+
+    <button class="btn btn-primary" onclick="startQuiz()">
+      🚀 Почати аудит
+    </button>
+    <div class="safe-bottom"></div>
+  </div>
+
+  <!-- ═══ SCREEN 1: NICHE ═══ -->
+  <div id="screen-1" class="screen q-screen">
+    <div class="q-icon">🏢</div>
+    <h2>Який у вас тип бізнесу?</h2>
+    <div class="options">
+      <button class="option-btn" onclick="selectNiche('services', this)">
+        <div class="option-icon">🔧</div>
+        <div>
+          <div>Послуги</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">СТО, салони, майстри</div>
+        </div>
+      </button>
+      <button class="option-btn" onclick="selectNiche('ecommerce', this)">
+        <div class="option-icon">🛍️</div>
+        <div>
+          <div>Товарний бізнес</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Instagram-магазини, склади</div>
+        </div>
+      </button>
+      <button class="option-btn" onclick="selectNiche('agency', this)">
+        <div class="option-icon">🎯</div>
+        <div>
+          <div>Агенція</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Маркетинг, дизайн, IT</div>
+        </div>
+      </button>
+      <button class="option-btn" onclick="selectNiche('infobiz', this)">
+        <div class="option-icon">🎓</div>
+        <div>
+          <div>Інфо-бізнес</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Курси, коучинг, консультації</div>
+        </div>
+      </button>
+    </div>
+    <div class="spacer"></div>
+    <div class="safe-bottom"></div>
+  </div>
+
+  <!-- ═══ SCREEN 2: PAIN ═══ -->
+  <div id="screen-2" class="screen q-screen">
+    <div class="q-icon">⏳</div>
+    <h2>Де ви втрачаєте найбільше часу?</h2>
+    <div class="options">
+      <button class="option-btn" onclick="selectPain('pricing', this)">
+        <div class="option-icon">💬</div>
+        <div>
+          <div>Відповіді на "Скільки коштує?"</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Однакові запитання щодня</div>
+        </div>
+      </button>
+      <button class="option-btn" onclick="selectPain('qualification', this)">
+        <div class="option-icon">🎯</div>
+        <div>
+          <div>Кваліфікація лідів</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Нецільові звернення</div>
+        </div>
+      </button>
+      <button class="option-btn" onclick="selectPain('retention', this)">
+        <div class="option-icon">🔔</div>
+        <div>
+          <div>Відсутність нагадувань</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Клієнти не повертаються</div>
+        </div>
+      </button>
+      <button class="option-btn" onclick="selectPain('data', this)">
+        <div class="option-icon">📊</div>
+        <div>
+          <div>Ручний збір даних</div>
+          <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Таблиці, звіти вручну</div>
+        </div>
+      </button>
+    </div>
+    <div class="spacer"></div>
+    <div class="safe-bottom"></div>
+  </div>
+
+  <!-- ═══ SCREEN 3: METRICS ═══ -->
+  <div id="screen-3" class="screen q-screen">
+    <div class="q-icon">📐</div>
+    <h2>Розрахуємо ваш потенціал</h2>
+
+    <div class="input-group">
+      <label class="input-label">Заявок на місяць</label>
+      <div class="number-input-wrap">
+        <button class="num-btn" onclick="adjustNum('leads', -10)">−</button>
+        <input class="num-input" id="leads-input" type="number" inputmode="numeric"
+               placeholder="0" min="0" max="9999" oninput="updateCalc()">
+        <button class="num-btn" onclick="adjustNum('leads', 10)">+</button>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Менеджерів у команді</label>
+      <div class="number-input-wrap">
+        <button class="num-btn" onclick="adjustNum('managers', -1)">−</button>
+        <input class="num-input" id="managers-input" type="number" inputmode="numeric"
+               placeholder="0" min="0" max="99" oninput="updateCalc()">
+        <button class="num-btn" onclick="adjustNum('managers', 1)">+</button>
+      </div>
+    </div>
+
+    <div class="preview-card">
+      <div class="preview-label">Автоматизація звільнить вам</div>
+      <div class="preview-value" id="hours-preview">0</div>
+      <div class="preview-unit">годин на місяць</div>
+    </div>
+
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="goToLoader()" id="calc-next-btn" style="margin-top:20px">
+      Побачити результат →
+    </button>
+    <div class="safe-bottom"></div>
+  </div>
+
+  <!-- ═══ LOADER ═══ -->
+  <div id="screen-loader" class="screen">
+    <div class="loader-ring"></div>
+    <div style="font-size:18px;font-weight:600">Аналізуємо бізнес...</div>
+    <div class="loader-steps" id="loader-steps">
+      <div class="loader-step" id="ls-1">Визначаємо тип процесів</div>
+      <div class="loader-step" id="ls-2">Розраховуємо ROI автоматизації</div>
+      <div class="loader-step" id="ls-3">Формуємо архітектуру</div>
+      <div class="loader-step" id="ls-4">Готуємо персональну стратегію</div>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN RESULT ═══ -->
+  <div id="screen-result" class="screen">
+    <div class="result-badge">✅ Аналіз завершено</div>
+    <h2 id="result-title" style="margin-bottom:16px"></h2>
+
+    <div class="result-highlight">
+      <div class="result-highlight-num" id="result-hours">0</div>
+      <div class="result-highlight-label">годин/місяць ви звільните від рутини</div>
+    </div>
+
+    <div class="result-card">
+      <div class="result-card-title">Ваша архітектура</div>
+      <div class="result-metric">
+        <span class="result-metric-label">Рішення</span>
+        <span class="result-metric-value accent" id="result-solution">—</span>
+      </div>
+      <div class="result-metric">
+        <span class="result-metric-label">Скорочення циклу угоди</span>
+        <span class="result-metric-value green">−30%</span>
+      </div>
+      <div class="result-metric">
+        <span class="result-metric-label">Окупність</span>
+        <span class="result-metric-value green">1–2 тижні</span>
+      </div>
+    </div>
+
+    <p class="result-strategy" id="result-strategy"></p>
+
+    <button class="btn btn-primary" onclick="getPDF()">
+      📄 Отримати схему в PDF
+    </button>
+    <button class="btn btn-secondary" onclick="bookConsult()">
+      📅 Забронювати консультацію
+    </button>
+    <button class="btn btn-ghost" onclick="shareResult()">
+      Поділитися результатом
+    </button>
+    <div class="safe-bottom"></div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* ════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════ */
+const state = {
+  niche: '',
+  pain: '',
+  leads_per_month: 0,
+  managers: 0,
+  estimated_hours_saved: 0
+};
+
+const TOTAL_STEPS = 5; // screens 1–5 (excl. hero + loader)
+let currentScreen = 0;
+
+/* ════════════════════════════════════════════════════
+   TELEGRAM SDK INIT
+════════════════════════════════════════════════════ */
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+  tg.setHeaderColor?.('#0D0D14');
+  tg.setBackgroundColor?.('#0D0D14');
+}
+
+/* ════════════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════════════ */
+function getScreenId(n) {
+  if (n === 4) return 'screen-loader';
+  if (n === 5) return 'screen-result';
+  return `screen-${n}`;
+}
+
+function goTo(next) {
+  const currentEl = document.getElementById(getScreenId(currentScreen));
+  const nextEl    = document.getElementById(getScreenId(next));
+  if (!nextEl) return;
+
+  currentEl?.classList.add('exit');
+  currentEl?.classList.remove('active');
+
+  setTimeout(() => {
+    currentEl?.classList.remove('exit');
+    nextEl.classList.add('active');
+    nextEl.scrollTop = 0;
+  }, 350);
+
+  currentScreen = next;
+  updateProgress();
+}
+
+function updateProgress() {
+  const bar   = document.getElementById('progress-bar');
+  const fill  = document.getElementById('progress-fill');
+  const label = document.getElementById('progress-label');
+
+  if (currentScreen === 0) {
+    bar.style.opacity   = '0';
+    label.style.opacity = '0';
+    return;
+  }
+
+  const step = Math.min(currentScreen, TOTAL_STEPS);
+  const pct  = (step / TOTAL_STEPS) * 100;
+  bar.style.opacity    = '1';
+  label.style.opacity  = '1';
+  fill.style.width     = pct + '%';
+
+  if (currentScreen <= 3) {
+    label.textContent = `${step} / ${TOTAL_STEPS}`;
+  } else {
+    label.textContent = '';
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   HERO ACTION
+════════════════════════════════════════════════════ */
+function startQuiz() {
+  if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+  goTo(1);
+}
+
+/* ════════════════════════════════════════════════════
+   Q1 – NICHE
+════════════════════════════════════════════════════ */
+function selectNiche(value, el) {
+  if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  document.querySelectorAll('#screen-1 .option-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  state.niche = value;
+  setTimeout(() => goTo(2), 300);
+}
+
+/* ════════════════════════════════════════════════════
+   Q2 – PAIN
+════════════════════════════════════════════════════ */
+function selectPain(value, el) {
+  if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
+  document.querySelectorAll('#screen-2 .option-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  state.pain = value;
+  setTimeout(() => goTo(3), 300);
+}
+
+/* ════════════════════════════════════════════════════
+   Q3 – METRICS
+════════════════════════════════════════════════════ */
+function adjustNum(field, delta) {
+  if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+  const inputId = field === 'leads' ? 'leads-input' : 'managers-input';
+  const input = document.getElementById(inputId);
+  const min = field === 'leads' ? 0 : 0;
+  const cur = parseInt(input.value) || 0;
+  input.value = Math.max(min, cur + delta);
+  updateCalc();
+}
+
+function updateCalc() {
+  const leads    = parseInt(document.getElementById('leads-input').value) || 0;
+  const managers = parseInt(document.getElementById('managers-input').value) || 0;
+  const hours    = Math.round(leads * 0.2);
+
+  state.leads_per_month        = leads;
+  state.managers               = managers;
+  state.estimated_hours_saved  = hours;
+
+  animateNumber('hours-preview', hours);
+}
+
+// Count-up animation
+const countAnimations = {};
+function animateNumber(elId, target) {
+  cancelAnimationFrame(countAnimations[elId]);
+  const el  = document.getElementById(elId);
+  const cur = parseInt(el.textContent) || 0;
+  const diff = target - cur;
+  const dur  = 400;
+  const start = performance.now();
+
+  function step(now) {
+    const t = Math.min((now - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - t, 3); // ease-out cubic
+    el.textContent = Math.round(cur + diff * ease);
+    if (t < 1) countAnimations[elId] = requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+  countAnimations[elId] = requestAnimationFrame(step);
+}
+
+/* ════════════════════════════════════════════════════
+   LOADER
+════════════════════════════════════════════════════ */
+function goToLoader() {
+  if (!state.leads_per_month && !state.managers) {
+    // allow proceed even if empty
+  }
+  goTo(4);
+  runLoader();
+}
+
+function runLoader() {
+  const steps = ['ls-1','ls-2','ls-3','ls-4'];
+  let i = 0;
+
+  // reset
+  steps.forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('done','active');
+  });
+
+  function tick() {
+    if (i >= steps.length) {
+      setTimeout(() => showResult(), 500);
+      return;
+    }
+    const el = document.getElementById(steps[i]);
+    el.classList.add('active');
+    setTimeout(() => {
+      el.classList.remove('active');
+      el.classList.add('done');
+      i++;
+      setTimeout(tick, 200);
+    }, 600);
+  }
+  setTimeout(tick, 400);
+}
+
+/* ════════════════════════════════════════════════════
+   RESULT PERSONALIZATION
+════════════════════════════════════════════════════ */
+const NICHE_LABELS = {
+  services:  'Сфера послуг',
+  ecommerce: 'Товарний бізнес',
+  agency:    'Агенція',
+  infobiz:   'Інфо-бізнес'
+};
+
+const SOLUTIONS = {
+  pricing: {
+    services:  'FAQ-бот + автокваліфікація',
+    ecommerce: 'Каталог-бот + автоматичний прайс',
+    agency:    'Lead-фільтр + брифінг-воронка',
+    infobiz:   'Консультаційний бот + CRM'
+  },
+  qualification: {
+    services:  'Кваліфікаційна анкета + CRM-тригери',
+    ecommerce: 'Таргет-фільтр + сегментація',
+    agency:    'LeadGen-фільтр + скоринг',
+    infobiz:   'Вебінарна воронка + фільтр'
+  },
+  retention: {
+    services:  'Retention-система + нагадування',
+    ecommerce: 'Loyalty-бот + авторасилка',
+    agency:    'Follow-up автоматизація',
+    infobiz:   'Drip-кампанія + реактивація'
+  },
+  data: {
+    services:  'CRM + автозвіти',
+    ecommerce: 'Warehouse-бот + дашборд',
+    agency:    'Аналітика проєктів + авто-репорт',
+    infobiz:   'Студентський портал + аналітика'
+  }
+};
+
+const STRATEGIES = {
+  pricing:       n => `Ваш головний біль — однотипні запитання про ціну. Для <strong>${NICHE_LABELS[n]}</strong> ми будуємо розумний FAQ-бот, який відповідає за 2 секунди і одразу переводить клієнта на наступний крок без участі менеджера.`,
+  qualification: n => `Нецільові ліди — це злодії часу. Для <strong>${NICHE_LABELS[n]}</strong> ми впроваджуємо автоматичний LeadGen-фільтр: клієнт проходить короткий скрінінг, і до менеджера доходять лише "гарячі" заявки.`,
+  retention:     n => `Клієнт, який не повернувся — втрачені гроші. Для <strong>${NICHE_LABELS[n]}</strong> ми будуємо Retention-систему з автонагадуваннями, яка підтримує зв'язок без вашої участі.`,
+  data:          n => `Ручний збір даних — це зупинений ріст. Для <strong>${NICHE_LABELS[n]}</strong> ми налаштовуємо автоматичний збір і синхронізацію даних у CRM з щоденними звітами на пошту.`
+};
+
+function showResult() {
+  const { niche, pain, estimated_hours_saved } = state;
+  const sol = (SOLUTIONS[pain] || {})[niche] || 'LeadGen-фільтр + Retention-система';
+  const strategy = (STRATEGIES[pain] || STRATEGIES.pricing)(niche || 'services');
+
+  document.getElementById('result-title').textContent =
+    `Ваша ідеальна архітектура для ${NICHE_LABELS[niche] || 'вашого бізнесу'}`;
+  document.getElementById('result-solution').textContent = sol;
+  document.getElementById('result-strategy').innerHTML = strategy;
+
+  goTo(5);
+
+  // Animate the hours counter
+  setTimeout(() => {
+    animateNumber('result-hours', estimated_hours_saved || 0);
+  }, 400);
+
+  // Send data to bot
+  sendTelegramData();
+}
+
+/* ════════════════════════════════════════════════════
+   TELEGRAM DATA SEND
+════════════════════════════════════════════════════ */
+function sendTelegramData() {
+  const payload = JSON.stringify({
+    niche:                state.niche,
+    pain:                 state.pain,
+    leads_per_month:      state.leads_per_month,
+    managers:             state.managers,
+    estimated_hours_saved: state.estimated_hours_saved,
+    timestamp:            new Date().toISOString()
+  });
+
+  if (tg?.sendData) {
+    tg.sendData(payload);
+  } else {
+    // Fallback for testing outside Telegram
+    console.log('[TG Data]', payload);
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   CTA ACTIONS
+════════════════════════════════════════════════════ */
+function getPDF() {
+  if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+  const payload = JSON.stringify({ action: 'get_pdf', ...state });
+  if (tg?.sendData) {
+    tg.sendData(payload);
+  } else {
+    alert('Запит на PDF надіслано!');
+  }
+}
+
+function bookConsult() {
+  if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+  // Replace with your actual booking link
+  const url = 'https://t.me/your_bot?start=consult';
+  if (tg?.openLink) {
+    tg.openLink(url);
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
+function shareResult() {
+  if (navigator.share) {
+    navigator.share({
+      title: 'Аудит автоматизації бізнесу',
+      text: `Я заощаджу ${state.estimated_hours_saved} годин/міс завдяки автоматизації!`,
+      url: 'https://t.me/your_bot'
+    });
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  updateProgress();
+
+  // Restore state from sessionStorage (optional persistence)
+  try {
+    const saved = sessionStorage.getItem('quiz_state');
+    if (saved) Object.assign(state, JSON.parse(saved));
+  } catch(e) {}
+});
+
+// Auto-save state on change
+setInterval(() => {
+  try { sessionStorage.setItem('quiz_state', JSON.stringify(state)); } catch(e) {}
+}, 1000);
+</script>
+</body>
+</html>
