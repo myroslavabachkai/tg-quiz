@@ -574,7 +574,7 @@
   <!-- ═══ SCREEN 2: PAIN ═══ -->
   <div id="screen-2" class="screen q-screen">
     <div class="q-icon">⏳</div>
-    <h2>Давайте розбиратись де ви втрачаєте найбільше часу?</h2>
+    <h2>Де ви втрачаєте найбільше часу?</h2>
     <div class="options">
       <button class="option-btn" onclick="selectPain('pricing', this)">
         <div class="option-icon">💬</div>
@@ -593,7 +593,7 @@
       <button class="option-btn" onclick="selectPain('retention', this)">
         <div class="option-icon">🔔</div>
         <div>
-          <div>Відсутність нагадувань про бізнес чи послуги</div>
+          <div>Відсутність нагадувань</div>
           <div style="font-size:12px;color:var(--muted);font-weight:400;margin-top:2px">Клієнти не повертаються</div>
         </div>
       </button>
@@ -612,7 +612,7 @@
   <!-- ═══ SCREEN 3: METRICS ═══ -->
   <div id="screen-3" class="screen q-screen">
     <div class="q-icon">📐</div>
-    <h2>Розрахуємо орієнтовно потенціал впровадження чат-бота для вашого бізнесу</h2>
+    <h2>Розрахуємо ваш потенціал</h2>
 
     <div class="input-group">
       <label class="input-label">Заявок на місяць</label>
@@ -635,9 +635,9 @@
     </div>
 
     <div class="preview-card">
-      <div class="preview-label">Автоматизація може звільнити вам</div>
+      <div class="preview-label">Автоматизація звільнить вам</div>
       <div class="preview-value" id="hours-preview">0</div>
-      <div class="preview-unit">годин на місяць. Це орієнтовні цифри, адже функціонал чат-бота можна покращувати чим буде покращуватись ефективність його роботи.</div>
+      <div class="preview-unit">годин на місяць</div>
     </div>
 
     <div class="spacer"></div>
@@ -687,15 +687,11 @@
 
     <p class="result-strategy" id="result-strategy"></p>
 
-    <button class="btn btn-primary" onclick="getPDF()">
-      📄 Отримати схему в PDF
-    </button>
+
     <button class="btn btn-secondary" onclick="bookConsult()">
       📅 Забронювати консультацію
     </button>
-    <button class="btn btn-ghost" onclick="shareResult()">
-      Поділитися результатом
-    </button>
+
     <div class="safe-bottom"></div>
   </div>
 
@@ -906,7 +902,7 @@ const SOLUTIONS = {
     services:  'FAQ-бот + автокваліфікація',
     ecommerce: 'Каталог-бот + автоматичний прайс',
     agency:    'Lead-фільтр + брифінг-воронка',
-    infobiz:   'Консультаційний бот + CRM або Google таблиця'
+    infobiz:   'Консультаційний бот + CRM'
   },
   qualification: {
     services:  'Кваліфікаційна анкета + CRM-тригери',
@@ -929,15 +925,15 @@ const SOLUTIONS = {
 };
 
 const STRATEGIES = {
-  pricing:       n => `Ваш головний біль — однотипні запитання про ціну і не тільки. Для <strong>${NICHE_LABELS[n]}</strong> ми будуємо розумний FAQ-бот, який відповідає за 2 секунди і одразу переводить клієнта на наступний крок без участі менеджера.`,
-  qualification: n => `Нецільові ліди — це нерелевантні ліди, які забирають від вас цінний час. Для <strong>${NICHE_LABELS[n]}</strong> ми впроваджуємо автоматичний LeadGen-фільтр: клієнт проходить коротку анкету в чат-боті, і до менеджера доходять лише "гарячі" заявки.`,
-  retention:     n => `Клієнт, який не повернувся — втрачені гроші. Для <strong>${NICHE_LABELS[n]}</strong> ми будуємо Retention-систему з автонагадуваннями, яка підтримує зв'язок з клієнтом. Розсилки в месенджері з нагадуванням про вас, стануть частиною вашої стратегії для повторних продажах.`,
-  data:          n => `Ручний збір даних — це втрачений час. Автоматизувати збір даних може навіть самий базовий чат-бот. Для <strong>${NICHE_LABELS[n]}</strong> ми налаштовуємо автоматичний збір і синхронізацію даних у CRM або Google таблиці.`
+  pricing:       n => `Ваш головний біль — однотипні запитання про ціну. Для <strong>${NICHE_LABELS[n]}</strong> ми будуємо розумний FAQ-бот, який відповідає за 2 секунди і одразу переводить клієнта на наступний крок без участі менеджера.`,
+  qualification: n => `Нецільові ліди — це злодії часу. Для <strong>${NICHE_LABELS[n]}</strong> ми впроваджуємо автоматичний LeadGen-фільтр: клієнт проходить короткий скрінінг, і до менеджера доходять лише "гарячі" заявки.`,
+  retention:     n => `Клієнт, який не повернувся — втрачені гроші. Для <strong>${NICHE_LABELS[n]}</strong> ми будуємо Retention-систему з автонагадуваннями, яка підтримує зв'язок без вашої участі.`,
+  data:          n => `Ручний збір даних — це зупинений ріст. Для <strong>${NICHE_LABELS[n]}</strong> ми налаштовуємо автоматичний збір і синхронізацію даних у CRM з щоденними звітами на пошту.`
 };
 
 function showResult() {
   const { niche, pain, estimated_hours_saved } = state;
-  const sol = (SOLUTIONS[pain] || {})[niche] || 'Генерація лідів-фільтр + Retention-система';
+  const sol = (SOLUTIONS[pain] || {})[niche] || 'LeadGen-фільтр + Retention-система';
   const strategy = (STRATEGIES[pain] || STRATEGIES.pricing)(niche || 'services');
 
   document.getElementById('result-title').textContent =
@@ -966,11 +962,14 @@ async function sendTelegramData() {
     leads_per_month:       state.leads_per_month,
     managers:              state.managers,
     estimated_hours_saved: state.estimated_hours_saved,
-    timestamp:             new Date().toISOString()
+    timestamp:             new Date().toISOString(),
+    chat_id:               window.Telegram?.WebApp?.initDataUnsafe?.user?.id || '',
+    first_name:            window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || '',
+    username:              window.Telegram?.WebApp?.initDataUnsafe?.user?.username || ''
   };
 
   // ← Вставте сюди ваш URL з Make
-  const MAKE_URL = 'https://hook.eu2.make.com/dvcflmo3644e5wpy8tdttuht9txe73ow';
+  const MAKE_URL = 'https://t.me/BookMeFastBot?start=booking_5992801240';
 
   try {
     await fetch(MAKE_URL, {
@@ -1004,7 +1003,7 @@ function getPDF() {
 function bookConsult() {
   if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
   // Replace with your actual booking link
-  const url = 'https://t.me/your_bot?start=consult';
+  const url = 'https://t.me/miroslava_botmaker';
   if (tg?.openLink) {
     tg.openLink(url);
   } else {
@@ -1017,7 +1016,7 @@ function shareResult() {
     navigator.share({
       title: 'Аудит автоматизації бізнесу',
       text: `Я заощаджу ${state.estimated_hours_saved} годин/міс завдяки автоматизації!`,
-      url: 'https://t.me/your_bot'
+      url: 'https://t.me/miroslava_botmaker'
     });
   }
 }
